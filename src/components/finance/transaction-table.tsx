@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { format } from "date-fns";
 import { MoreHorizontal, Pencil, Trash2 } from "lucide-react";
+import { toast } from "sonner";
 
 import {
   Dialog,
@@ -66,6 +67,8 @@ export function TransactionTable({ items, kind, onUpdate, onDelete }: Props) {
     try {
       await onUpdate(editing.id, data);
       setEditing(null);
+    } catch (error) {
+      toast.error(getErrorMessage(error, `Could not update this ${kind}.`));
     } finally {
       setLoading(false);
     }
@@ -80,6 +83,13 @@ export function TransactionTable({ items, kind, onUpdate, onDelete }: Props) {
     try {
       await onDelete(deleting.id);
       setDeleting(null);
+    } catch (error) {
+      toast.error(
+        getErrorMessage(
+          error,
+          `Could not delete this ${kind === "expense" ? "expense" : "income entry"}.`,
+        ),
+      );
     } finally {
       setLoading(false);
     }
@@ -189,4 +199,8 @@ export function TransactionTable({ items, kind, onUpdate, onDelete }: Props) {
       />
     </>
   );
+}
+
+function getErrorMessage(error: unknown, fallback: string) {
+  return error instanceof Error ? error.message : fallback;
 }

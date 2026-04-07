@@ -1,6 +1,7 @@
 "use client";
 
 import { ExpenseReportFiltersButton } from "@/components/expenses/expense-report-filters-button";
+import { FinanceReportFiltersButton } from "@/components/finance/finance-report-filters-button";
 import { SearchForm } from "@/components/search-form";
 import { ThemeToggle } from "@/components/theme-toggle";
 import Link from "next/link";
@@ -68,6 +69,7 @@ export function SiteHeader() {
         </Breadcrumb>
         <div className="ml-auto flex w-full items-center justify-end gap-2 sm:w-auto">
           <ExpenseReportFiltersButton />
+          <FinanceReportFiltersButton />
           <SearchForm className="w-full sm:w-auto" />
           <ThemeToggle />
         </div>

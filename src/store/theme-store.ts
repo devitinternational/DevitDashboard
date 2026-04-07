@@ -16,7 +16,7 @@ type ThemeState = {
 export const useThemeStore = create<ThemeState>()(
   persist(
     (set, get) => ({
-      theme: "light",
+      theme: "dark",
       hydrated: false,
       setTheme: (theme) => set({ theme }),
       setHydrated: (hydrated) => set({ hydrated }),

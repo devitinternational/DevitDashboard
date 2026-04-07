@@ -4,7 +4,8 @@ export type Income = {
   category: string;
   description?: string | null;
   date: string;
-  amount: string;
+  amountINR: string;
+  amountMYR: string;
   createdById: string;
   createdAt: string;
   updatedAt: string;
@@ -19,13 +20,16 @@ export type FinanceReport = {
   expenses: import("./expense").Expense[];
   incomes: Income[];
   summary: {
-    totalExpenses: number;
-    totalIncome: number;
-    net: number;
+    totalExpensesINR: number;
+    totalExpensesMYR: number;
+    totalIncomeINR: number;
+    totalIncomeMYR: number;
+    netINR: number;
+    netMYR: number;
     expenseCount: number;
     incomeCount: number;
-    expenseByCategory: Record<string, number>;
-    incomeByCategory: Record<string, number>;
+    expenseByCategory: Record<string, { INR: number; MYR: number }>;
+    incomeByCategory: Record<string, { INR: number; MYR: number }>;
   };
 };
 
@@ -34,5 +38,7 @@ export type CreateIncomeInput = {
   category: string;
   description?: string;
   date: string;
-  amount: string;
+  amountINR?: string;
+  amountMYR?: string;
+  inputCurrency: "INR" | "MYR";
 };

@@ -23,21 +23,21 @@ const data = {
     avatar: "/devitbig.png",
   },
   navMain: [
-    {
-      title: "Expenses",
-      url: "/expenses/report",
-      icon: <PieChartIcon />, // you can change icon if you want
-      items: [
-        {
-          title: "Expense Report",
-          url: "/expenses/report",
-        },
-        {
-          title: "Expense Actions",
-          url: "/expenses/action",
-        },
-      ],
-    },
+    // {
+    //   title: "Expenses",
+    //   url: "/expenses/report",
+    //   icon: <PieChartIcon />, // you can change icon if you want
+    //   items: [
+    //     {
+    //       title: "Expense Report",
+    //       url: "/expenses/report",
+    //     },
+    //     {
+    //       title: "Expense Actions",
+    //       url: "/expenses/action",
+    //     },
+    //   ],
+    // },
     {
       title: "Finance",
       url: "/finance/report",

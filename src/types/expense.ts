@@ -4,7 +4,8 @@ export type Expense = {
   category: string;
   description?: string | null;
   date: string;
-  amount: string;
+  amountINR: string;
+  amountMYR: string;
   createdById: string;
   createdAt: string;
   updatedAt: string;
@@ -12,15 +13,6 @@ export type Expense = {
     id: string;
     name: string | null;
     email: string;
-  };
-};
-
-export type ExpenseReport = {
-  expenses: Expense[];
-  summary: {
-    total: number;
-    count: number;
-    byCategory: Record<string, number>;
   };
 };
 
@@ -38,5 +30,7 @@ export type CreateExpenseInput = {
   category: string;
   description?: string;
   date: string;
-  amount: string;
+  amountINR?: string;
+  amountMYR?: string;
+  inputCurrency: "INR" | "MYR";
 };

@@ -14,7 +14,7 @@ import {
   SidebarMenuButton,
   SidebarMenuItem,
 } from "@/components/ui/sidebar";
-import { PieChartIcon } from "lucide-react";
+import { BookOpenIcon, FilePlus2Icon, PieChartIcon } from "lucide-react";
 
 const data = {
   user: {
@@ -52,6 +52,26 @@ const data = {
           url: "/finance/action",
         },
       ],
+    },
+    {
+      title: "Domains",
+      url: "/domains",
+      icon: <BookOpenIcon />,
+      items: [
+        {
+          title: "All Domains",
+          url: "/domains",
+        },
+        {
+          title: "New Domain",
+          url: "/domains/new",
+        },
+      ],
+    },
+    {
+      title: "Create Domain",
+      url: "/domains/new",
+      icon: <FilePlus2Icon />,
     },
   ],
   // navSecondary: [

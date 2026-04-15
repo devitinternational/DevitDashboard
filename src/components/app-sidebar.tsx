@@ -54,19 +54,19 @@ const data = {
       ],
     },
     {
-      title: "Domains",
+      title: "All Domains",
       url: "/domains",
       icon: <BookOpenIcon />,
-      items: [
-        {
-          title: "All Domains",
-          url: "/domains",
-        },
-        {
-          title: "New Domain",
-          url: "/domains/new",
-        },
-      ],
+      // items: [
+      //   {
+      //     title: "All Domains",
+      //     url: "/domains",
+      //   },
+      //   {
+      //     title: "New Domain",
+      //     url: "/domains/new",
+      //   },
+      // ],
     },
     {
       title: "Create Domain",

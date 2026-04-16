@@ -1,27 +1,51 @@
 import "dotenv/config";
-import { PrismaClient } from "@prisma/client";
+import { Client } from "pg";
 
-const prisma = new PrismaClient();
+const connectionString = process.env.DIRECT_URL || process.env.DATABASE_URL;
+
+if (!connectionString) {
+  throw new Error("DATABASE_URL or DIRECT_URL environment variable not set");
+}
 
 async function main() {
-  const user = await prisma.user.create({
-    data: {
-      name: "Test User",
-      email: "test@example.com",
-      role: "ADMIN",
-    },
+  const client = new Client({
+    connectionString,
+    ssl: { rejectUnauthorized: false }, // Required for Neon
   });
 
-  console.log("User created:", user);
-  console.log("Seeding completed");
+  try {
+    await client.connect();
+    console.log("✓ Connected to database");
+
+    // Create a test user
+    await client.query(`
+      INSERT INTO "User" (id, name, email, "role", "createdAt", "updatedAt")
+      VALUES (
+        gen_random_uuid(),
+        'Test User',
+        'test@example.com',
+        'ADMIN',
+        NOW(),
+        NOW()
+      )
+      ON CONFLICT (email) DO NOTHING
+    `);
+
+    console.log("✓ User seeded successfully");
+  } catch (error) {
+    console.error("Error seeding database:", error);
+    throw error;
+  } finally {
+    await client.end();
+  }
 }
 
 main()
-  .then(async () => {
-    await prisma.$disconnect();
+  .then(() => {
+    console.log("Seeding completed");
+    process.exit(0);
   })
-  .catch(async (e) => {
-    console.error(e);
-    await prisma.$disconnect();
+  .catch((error) => {
+    console.error("Seeding failed:", error);
     process.exit(1);
   });

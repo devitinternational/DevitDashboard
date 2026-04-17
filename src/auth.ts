@@ -5,10 +5,10 @@ import Google from "next-auth/providers/google";
 import GitHub from "next-auth/providers/github";
 import bcrypt from "bcryptjs";
 import { prisma } from "@/lib/prisma";
-import type { Role } from "@prisma/client";
+import type { Role } from "../prisma/generated/prisma";
 
 export const { handlers, auth, signIn, signOut } = NextAuth({
-  adapter: PrismaAdapter(prisma),
+  adapter: PrismaAdapter(prisma as Parameters<typeof PrismaAdapter>[0]),
 
   session: {
     strategy: "jwt",

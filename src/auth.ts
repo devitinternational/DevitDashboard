@@ -4,14 +4,50 @@ import Credentials from "next-auth/providers/credentials";
 import Google from "next-auth/providers/google";
 import GitHub from "next-auth/providers/github";
 import bcrypt from "bcryptjs";
+import { SignJWT, jwtVerify } from "jose";
 import { prisma } from "@/lib/prisma";
-import type { Role } from "@prisma/client";
+import type { Role } from "../prisma/generated/prisma";
+import { getAuthSecret } from "./lib/auth-secret";
+
+const dashboardCookiePrefix = "devit-dashboard";
+
+// const getSecret = () => {
+//   const s = process.env.AUTH_SECRET;
+//   if (!s) throw new Error("AUTH_SECRET is not set");
+//   return new TextEncoder().encode(s);
+// };
 
 export const { handlers, auth, signIn, signOut } = NextAuth({
-  adapter: PrismaAdapter(prisma),
+  adapter: PrismaAdapter(prisma as any),
 
-  session: {
-    strategy: "jwt",
+  session: { strategy: "jwt" },
+
+  cookies: {
+    sessionToken: { name: `${dashboardCookiePrefix}.session-token` },
+    callbackUrl: { name: `${dashboardCookiePrefix}.callback-url` },
+    csrfToken: { name: `${dashboardCookiePrefix}.csrf-token` },
+    pkceCodeVerifier: { name: `${dashboardCookiePrefix}.pkce.code_verifier` },
+    state: { name: `${dashboardCookiePrefix}.state` },
+    nonce: { name: `${dashboardCookiePrefix}.nonce` },
+  },
+
+  // Override to plain HS256 so backend can verify with jose directly
+  jwt: {
+    async encode({ token }): Promise<string> {
+      return new SignJWT(token as Record<string, unknown>)
+        .setProtectedHeader({ alg: "HS256" })
+        .setIssuedAt()
+        .setExpirationTime("30d")
+        .sign(getAuthSecret());
+    },
+    async decode({ token }) {
+      if (!token) return null;
+      const { payload } = await jwtVerify(token, getAuthSecret(), {
+        algorithms: ["HS256"],
+      });
+      // Cast to JWT — our token shape matches because we put id/role in the jwt callback
+      return payload as import("next-auth/jwt").JWT;
+    },
   },
 
   providers: [
@@ -19,12 +55,10 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
       clientId: process.env.AUTH_GOOGLE_ID!,
       clientSecret: process.env.AUTH_GOOGLE_SECRET!,
     }),
-
     GitHub({
       clientId: process.env.AUTH_GITHUB_ID!,
       clientSecret: process.env.AUTH_GITHUB_SECRET!,
     }),
-
     Credentials({
       name: "credentials",
       credentials: {
@@ -44,7 +78,6 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
           credentials.password as string,
           user.password,
         );
-
         if (!isValid) return null;
 
         return {
@@ -60,38 +93,34 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
 
   callbacks: {
     async signIn({ user, account }) {
-      // OAuth users: block non-ADMIN from dashboard
+      // For OAuth: only ADMIN or CREATOR can access dashboard
       if (account?.provider !== "credentials") {
         const dbUser = await prisma.user.findUnique({
           where: { email: user.email! },
           select: { role: true },
         });
-
-        // New OAuth user — they get LEARNER by default, block dashboard access
-        // Existing user must be ADMIN
-        if (dbUser && dbUser.role !== "ADMIN") return false;
+        if (!dbUser || dbUser.role === "LEARNER") return false;
       }
-
       return true;
     },
-
 
     async jwt({ token, user }) {
       if (user) {
         token.id = user.id!;
-        token.role = user.role;
+        token.role = (user.role ?? "LEARNER") as Role;
       }
-
-      // Refresh role from DB so role changes take effect without re-login
+      // Always refresh role from DB — role changes take effect immediately
       if (typeof token.id === "string") {
         const dbUser = await prisma.user.findUnique({
           where: { id: token.id },
-          select: { role: true },
+          select: { role: true, name: true, email: true },
         });
-
-        if (dbUser) token.role = dbUser.role;
+        if (dbUser) {
+          token.role = dbUser.role;
+          token.name = dbUser.name;
+          token.email = dbUser.email;
+        }
       }
-
       return token;
     },
 

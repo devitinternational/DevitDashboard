@@ -2,6 +2,7 @@
 
 import * as React from "react";
 import Link from "next/link";
+import { canManageDomains, isAdminRole, type DashboardRole } from "@/lib/authz";
 
 import { NavMain } from "@/components/nav-main";
 import { NavUser } from "@/components/nav-user";
@@ -14,84 +15,26 @@ import {
   SidebarMenuButton,
   SidebarMenuItem,
 } from "@/components/ui/sidebar";
-import { BookOpenIcon, FilePlus2Icon, PieChartIcon } from "lucide-react";
-
-const data = {
-  user: {
-    name: "shadcn",
-    email: "m@example.com",
-    avatar: "/devitbig.png",
-  },
-  navMain: [
-    // {
-    //   title: "Expenses",
-    //   url: "/expenses/report",
-    //   icon: <PieChartIcon />, // you can change icon if you want
-    //   items: [
-    //     {
-    //       title: "Expense Report",
-    //       url: "/expenses/report",
-    //     },
-    //     {
-    //       title: "Expense Actions",
-    //       url: "/expenses/action",
-    //     },
-    //   ],
-    // },
-    {
-      title: "Finance",
-      url: "/finance/report",
-      icon: <PieChartIcon />, // you can change icon if you want
-      items: [
-        {
-          title: "Finance Report",
-          url: "/finance/report",
-        },
-        {
-          title: "Finance Actions",
-          url: "/finance/action",
-        },
-      ],
-    },
-    {
-      title: "All Domains",
-      url: "/domains",
-      icon: <BookOpenIcon />,
-      // items: [
-      //   {
-      //     title: "All Domains",
-      //     url: "/domains",
-      //   },
-      //   {
-      //     title: "New Domain",
-      //     url: "/domains/new",
-      //   },
-      // ],
-    },
-    {
-      title: "Create Domain",
-      url: "/domains/new",
-      icon: <FilePlus2Icon />,
-    },
-  ],
-  // navSecondary: [
-  //   {
-  //     title: "Support",
-  //     url: "#",
-  //     icon: <LifeBuoyIcon />,
-  //   },
-  //   {
-  //     title: "Feedback",
-  //     url: "#",
-  //     icon: <SendIcon />,
-  //   },
-  // ],
-};
+import {
+  BookOpenIcon,
+  FilePlus2Icon,
+  PieChartIcon,
+  ReceiptIcon,
+  ClipboardCheckIcon,
+} from "lucide-react";
 
 type SidebarUser = {
   name: string;
   email: string;
   avatar: string;
+  role: DashboardRole;
+};
+
+type NavItem = {
+  title: string;
+  url: string;
+  icon: React.ReactNode;
+  items?: { title: string; url: string }[];
 };
 
 export function AppSidebar({
@@ -100,6 +43,46 @@ export function AppSidebar({
 }: React.ComponentProps<typeof Sidebar> & {
   user: SidebarUser;
 }) {
+  const navMain: NavItem[] = [];
+
+  if (isAdminRole(user.role)) {
+    navMain.push({
+      title: "Finance",
+      url: "/finance/report",
+      icon: <PieChartIcon />,
+      items: [
+        { title: "Finance Report", url: "/finance/report" },
+        { title: "Finance Actions", url: "/finance/action" },
+      ],
+    });
+  }
+
+  if (canManageDomains(user.role)) {
+    navMain.push({
+      title: "All Domains",
+      url: "/domains",
+      icon: <BookOpenIcon />,
+    });
+    navMain.push({
+      title: "Create Domain",
+      url: "/domains/new",
+      icon: <FilePlus2Icon />,
+    });
+    navMain.push({
+      title: "Submissions",
+      url: "/submissions",
+      icon: <ClipboardCheckIcon />,
+    });
+  }
+
+  if (isAdminRole(user.role)) {
+    navMain.push({
+      title: "Invoices",
+      url: "/invoices",
+      icon: <ReceiptIcon />,
+    });
+  }
+
   return (
     <Sidebar
       className="top-(--header-height) h-[calc(100svh-var(--header-height))]!"
@@ -110,16 +93,14 @@ export function AppSidebar({
           <SidebarMenuItem>
             <SidebarMenuButton size="lg" asChild>
               <Link href="/dashboard">
-                <div className="flex aspect-square size-8 items-center justify-center rounded-lg bg-sidebar-primary text-sidebar-primary-foreground">
-                  <div className="flex aspect-square size-8 items-center justify-center rounded-lg bg-sidebar-primary text-sidebar-primary-foreground overflow-hidden">
-                    <img
-                      src="/devitbig.png"
-                      alt="DevIt Logo"
-                      width={32}
-                      height={32}
-                      className="w-full h-full object-cover"
-                    />
-                  </div>
+                <div className="flex aspect-square size-8 items-center justify-center rounded-lg bg-sidebar-primary text-sidebar-primary-foreground overflow-hidden">
+                  <img
+                    src="/devitbig.png"
+                    alt="DevIt Logo"
+                    width={32}
+                    height={32}
+                    className="w-full h-full object-cover"
+                  />
                 </div>
                 <div className="grid flex-1 text-left text-sm leading-tight">
                   <span className="truncate font-medium">DevIt</span>
@@ -130,7 +111,7 @@ export function AppSidebar({
         </SidebarMenu>
       </SidebarHeader>
       <SidebarContent>
-        <NavMain items={data.navMain} />
+        <NavMain items={navMain} />
       </SidebarContent>
       <SidebarFooter>
         <NavUser user={user} />

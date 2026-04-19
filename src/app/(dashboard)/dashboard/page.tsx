@@ -1,4 +1,6 @@
 import Link from "next/link";
+import { auth } from "@/auth";
+import { isCreatorRole } from "@/lib/authz";
 import {
   ArrowRight,
   BadgeIndianRupee,
@@ -7,6 +9,7 @@ import {
   PlusCircle,
   WalletCards,
 } from "lucide-react";
+import { redirect } from "next/navigation";
 
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -41,7 +44,12 @@ const highlights = [
   "Built-in INR and MYR workflows for reporting and review",
 ] as const;
 
-export default function DashboardPage() {
+export default async function DashboardPage() {
+  const session = await auth();
+  if (isCreatorRole(session?.user?.role)) {
+    redirect("/domains");
+  }
+
   return (
     <div className="space-y-6">
       <Card className="overflow-hidden border-0 bg-[radial-gradient(circle_at_top_left,_hsl(var(--primary)/0.16),_transparent_34%),linear-gradient(135deg,hsl(var(--card)),hsl(var(--muted)/0.45))] shadow-sm ring-1 ring-border/60">

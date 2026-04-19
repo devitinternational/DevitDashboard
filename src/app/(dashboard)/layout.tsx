@@ -25,6 +25,7 @@ export default async function DashboardLayout({
               name: session.user.name ?? "Admin",
               email: session.user.email ?? "",
               avatar: session.user.image ?? "/devitbig.png",
+              role: session.user.role,
             }}
           />
           <SidebarInset className="min-h-0 overflow-hidden">

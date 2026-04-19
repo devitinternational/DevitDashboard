@@ -10,7 +10,7 @@ import { Textarea } from "@/components/ui/textarea";
 import {
   ArrowLeft,
   ExternalLink,
-  Github,
+  GitBranch,
   User,
   BookOpen,
   CheckCircle,
@@ -28,44 +28,40 @@ async function reviewSubmission(formData: FormData) {
   }
 
   const submissionId = formData.get("submissionId") as string;
-  const status = formData.get("status") as
-    | "PASSED"
-    | "FAILED"
-    | "NEEDS_REVISION";
+  const status = formData.get("status") as "PASSED" | "FAILED" | "NEEDS_REVISION";
   const reviewNotes = (formData.get("reviewNotes") as string)?.trim() || null;
 
   if (!submissionId || !status) throw new Error("Missing fields");
 
-  await prisma.submission.update({
-    where: { id: submissionId },
-    data: {
-      status,
-      reviewNotes,
-      reviewedAt: new Date(),
+  const backendUrl = process.env.BACKEND_URL;
+  if (!backendUrl) throw new Error("BACKEND_URL not set");
+
+  // Generate a real HS256 JWT signed with AUTH_SECRET — same as what NextAuth produces
+  const { SignJWT } = await import("jose");
+  const secret = new TextEncoder().encode(process.env.AUTH_SECRET!);
+  const token = await new SignJWT({
+    id: session.user.id,
+    email: session.user.email,
+    role: session.user.role,
+    name: session.user.name,
+  })
+    .setProtectedHeader({ alg: "HS256" })
+    .setIssuedAt()
+    .setExpirationTime("5m") // short-lived service token
+    .sign(secret);
+
+  const res = await fetch(`${backendUrl}/api/submissions/${submissionId}/review`, {
+    method: "PATCH",
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${token}`,
     },
+    body: JSON.stringify({ status, reviewNotes }),
   });
 
-  // tryCompleteCourse is handled by the backend webhook — but since we're
-  // updating via Prisma directly here, fire the backend review endpoint
-  // so the certificate flow triggers correctly.
-  const backendUrl = process.env.BACKEND_URL;
-  const secret = process.env.AUTH_SECRET; // reuse shared secret for internal call
-
-  if (backendUrl && secret) {
-    try {
-      await fetch(`${backendUrl}/api/submissions/${submissionId}/review`, {
-        method: "PATCH",
-        headers: {
-          "Content-Type": "application/json",
-          // Use a service-level header your backend trusts, or just
-          // update via Prisma above and skip this if backend isn't needed.
-          Authorization: `Bearer ${secret}`,
-        },
-        body: JSON.stringify({ status, reviewNotes }),
-      });
-    } catch {
-      // Non-fatal — Prisma update already happened above
-    }
+  if (!res.ok) {
+    const err = await res.json().catch(() => ({}));
+    throw new Error(err.message ?? "Review failed");
   }
 
   revalidatePath("/submissions");
@@ -144,8 +140,7 @@ export default async function SubmissionReviewPage({
   const sub = await getSubmission(id);
   if (!sub) notFound();
 
-  const isAlreadyReviewed =
-    sub.status === "PASSED" || sub.status === "FAILED";
+  const isAlreadyReviewed = sub.status === "PASSED" || sub.status === "FAILED";
 
   return (
     <div className="max-w-3xl mx-auto px-4 py-8 space-y-6">
@@ -212,7 +207,7 @@ export default async function SubmissionReviewPage({
         {/* Submission */}
         <div className="border border-border rounded-xl p-4 space-y-1">
           <div className="flex items-center gap-1.5 text-xs font-medium text-muted-foreground mb-2">
-            <Github className="h-3.5 w-3.5" /> Submission
+            <GitBranch className="h-3.5 w-3.5" /> Submission
           </div>
           <p className="text-xs text-muted-foreground">
             Submitted{" "}
@@ -250,13 +245,15 @@ export default async function SubmissionReviewPage({
             rel="noopener noreferrer"
             className="inline-flex items-center gap-2 text-sm font-medium hover:underline underline-offset-4"
           >
-            <Github className="h-4 w-4" />
+            <GitBranch className="h-4 w-4" />
             {sub.repoUrl}
             <ExternalLink className="h-3.5 w-3.5 text-muted-foreground" />
           </a>
           {sub.notes && (
             <p className="mt-3 text-sm text-muted-foreground border-t border-border pt-3">
-              <span className="font-medium text-foreground">Learner note: </span>
+              <span className="font-medium text-foreground">
+                Learner note:{" "}
+              </span>
               {sub.notes}
             </p>
           )}
@@ -360,7 +357,10 @@ function StatusBadge({ status }: { status: string }) {
     FAILED: "Failed",
   };
   return (
-    <Badge variant="outline" className={`text-sm h-7 px-3 ${map[status] ?? ""}`}>
+    <Badge
+      variant="outline"
+      className={`text-sm h-7 px-3 ${map[status] ?? ""}`}
+    >
       {label[status] ?? status}
     </Badge>
   );

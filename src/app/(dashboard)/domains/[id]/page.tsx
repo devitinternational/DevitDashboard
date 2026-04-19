@@ -10,16 +10,21 @@ import {
   Lock,
   BookOpen,
   CheckCircle2,
-  Users,
   Pencil,
 } from "lucide-react";
+import { canManageDomains, isCreatorRole } from "@/lib/authz";
 
 async function getDomain(id: string) {
   const session = await auth();
-  if (!session?.user?.id) return null;
+  if (!session?.user?.id || !canManageDomains(session.user.role)) return null;
 
-  return prisma.domain.findUnique({
-    where: { id },
+  return prisma.domain.findFirst({
+    where: {
+      id,
+      ...(isCreatorRole(session.user.role)
+        ? { creatorId: session.user.id }
+        : {}),
+    },
     include: {
       creator: { select: { name: true, email: true } },
       sections: {

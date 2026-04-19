@@ -5,6 +5,7 @@ import { Badge } from "@/components/ui/badge";
 import { Plus, Eye, Pencil, Globe2, Lock } from "lucide-react";
 import { prisma } from "@/lib/prisma";
 import { auth } from "@/auth";
+import { canManageDomains, isCreatorRole } from "@/lib/authz";
 
 // In real usage: fetch from your API via server component or React Query
 // import { api } from "@/lib/api";
@@ -25,9 +26,12 @@ interface DomainRow {
 
 async function getDomains() {
   const session = await auth();
-  if (!session?.user?.id) return [];
+  if (!session?.user?.id || !canManageDomains(session.user.role)) return [];
 
   return prisma.domain.findMany({
+    where: isCreatorRole(session.user.role)
+      ? { creatorId: session.user.id }
+      : undefined,
     orderBy: { createdAt: "desc" },
     select: {
       id: true,

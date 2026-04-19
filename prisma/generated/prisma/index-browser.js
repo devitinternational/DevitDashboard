@@ -316,6 +316,14 @@ exports.Prisma.InvoiceScalarFieldEnum = {
   issuedAt: 'issuedAt'
 };
 
+exports.Prisma.LessonProgressScalarFieldEnum = {
+  id: 'id',
+  userId: 'userId',
+  lessonId: 'lessonId',
+  enrollmentId: 'enrollmentId',
+  completedAt: 'completedAt'
+};
+
 exports.Prisma.SortOrder = {
   asc: 'asc',
   desc: 'desc'
@@ -388,7 +396,8 @@ exports.Prisma.ModelName = {
   Certificate: 'Certificate',
   Expense: 'Expense',
   Income: 'Income',
-  Invoice: 'Invoice'
+  Invoice: 'Invoice',
+  LessonProgress: 'LessonProgress'
 };
 
 /**

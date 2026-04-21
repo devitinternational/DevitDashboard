@@ -1,5 +1,5 @@
 import type { Role } from "@devitinternational/db";
-import type { DefaultSession } from "next-auth";
+import type { DefaultSession, DefaultJWT } from "next-auth";
 
 declare module "next-auth" {
   interface Session {
@@ -10,15 +10,17 @@ declare module "next-auth" {
   }
 
   interface User {
-    role: Role;
+    role?: Role;
   }
 }
 
 declare module "next-auth/jwt" {
-  interface JWT {
+  interface JWT extends DefaultJWT {
     id: string;
     role: Role;
   }
 }
 
-export {}; 
+
+
+export {};

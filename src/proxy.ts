@@ -1,4 +1,5 @@
 import { auth } from "@/auth";
+import { canAccessDashboardPath } from "@/lib/authz";
 import { NextResponse } from "next/server";
 
 export default auth((req) => {
@@ -11,8 +12,7 @@ export default auth((req) => {
     return NextResponse.redirect(new URL("/login", nextUrl));
   }
 
-  // Logged in but not ADMIN → unauthorized
-  if (role !== "ADMIN") {
+  if (!canAccessDashboardPath(role, nextUrl.pathname)) {
     return NextResponse.redirect(new URL("/unauthorized", nextUrl));
   }
 

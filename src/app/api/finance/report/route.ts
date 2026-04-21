@@ -1,17 +1,14 @@
 import { auth } from "@/auth";
+import { getBackendBearerToken } from "@/lib/backend-auth";
+import { isAdminRole } from "@/lib/authz";
 import { NextRequest, NextResponse } from "next/server";
-import jwt from "jsonwebtoken";
 
 const API = process.env.BACKEND_URL ?? "http://localhost:4000";
 
 async function getBackendToken() {
   const session = await auth();
-  if (!session?.user) return null;
-  return jwt.sign(
-    { id: session.user.id, email: session.user.email, role: session.user.role, name: session.user.name },
-    process.env.AUTH_SECRET!,
-    { expiresIn: "1m" }
-  );
+  if (!session?.user || !isAdminRole(session.user.role)) return null;
+  return getBackendBearerToken();
 }
 
 export async function GET(req: NextRequest) {

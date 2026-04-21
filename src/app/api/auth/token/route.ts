@@ -1,8 +1,8 @@
 import { NextRequest, NextResponse } from "next/server";
+import { getBackendBearerToken } from "@/lib/backend-auth";
 
 export async function GET(req: NextRequest) {
-  // Auth.js stores the JWT in this cookie — just forward it as-is
-  const token = req.cookies.get("authjs.session-token")?.value;
+  const token = await getBackendBearerToken();
 
   if (!token) {
     return NextResponse.json({ token: null }, { status: 401 });

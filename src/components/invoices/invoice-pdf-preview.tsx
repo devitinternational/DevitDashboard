@@ -2,10 +2,10 @@
 
 import { PDFViewer } from "@react-pdf/renderer";
 import { InvoicePDFTemplate } from "./invoice-pdf-template";
-import type { InvoicePDFData } from "@/types/invoice";
+import type { InvoicePdfPreviewData } from "@/types/invoice";
 
 interface Props {
-  data: InvoicePDFData;
+  data: InvoicePdfPreviewData;
 }
 
 export function InvoicePDFPreviewInner({ data }: Props) {

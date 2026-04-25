@@ -6,16 +6,10 @@ import GitHub from "next-auth/providers/github";
 import bcrypt from "bcryptjs";
 import { SignJWT, jwtVerify } from "jose";
 import { prisma } from "@/lib/prisma";
-import type { Role } from "../prisma/generated/prisma";
+import type { Role } from "@devitinternational/db";
 import { getAuthSecret } from "./lib/auth-secret";
 
 const dashboardCookiePrefix = "devit-dashboard";
-
-// const getSecret = () => {
-//   const s = process.env.AUTH_SECRET;
-//   if (!s) throw new Error("AUTH_SECRET is not set");
-//   return new TextEncoder().encode(s);
-// };
 
 export const { handlers, auth, signIn, signOut } = NextAuth({
   adapter: PrismaAdapter(prisma as any),

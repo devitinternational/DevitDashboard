@@ -1,4 +1,4 @@
-import { PrismaClient } from "../../prisma/generated/prisma";
+import { PrismaClient } from "@devitinternational/db";
 import { PrismaNeon } from "@prisma/adapter-neon";
 
 const globalForPrisma = globalThis as unknown as {
@@ -6,7 +6,12 @@ const globalForPrisma = globalThis as unknown as {
 };
 
 function createPrismaClient() {
-  const adapter = new PrismaNeon({ connectionString: process.env.DATABASE_URL! });
+  const isDev = process.env.IS_DEV === "true";
+  const connectionString = isDev
+    ? process.env.DEV_DATABASE_URL!
+    : process.env.PROD_DATABASE_URL!;
+  
+  const adapter = new PrismaNeon({ connectionString });
   return new PrismaClient({
     adapter,
     log: process.env.NODE_ENV === "development" ? ["query"] : [],

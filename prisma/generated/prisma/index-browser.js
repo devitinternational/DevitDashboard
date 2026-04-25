@@ -302,10 +302,18 @@ exports.Prisma.IncomeScalarFieldEnum = {
 exports.Prisma.InvoiceScalarFieldEnum = {
   id: 'id',
   invoiceNo: 'invoiceNo',
+  type: 'type',
+  status: 'status',
   enrollmentId: 'enrollmentId',
   buyerName: 'buyerName',
   buyerEmail: 'buyerEmail',
   courseTitle: 'courseTitle',
+  projectName: 'projectName',
+  domain: 'domain',
+  notes: 'notes',
+  emailTemplate: 'emailTemplate',
+  emailSubject: 'emailSubject',
+  recipients: 'recipients',
   amountINR: 'amountINR',
   gstPercent: 'gstPercent',
   gstAmount: 'gstAmount',
@@ -313,7 +321,26 @@ exports.Prisma.InvoiceScalarFieldEnum = {
   pdfUrl: 'pdfUrl',
   razorpayOrderId: 'razorpayOrderId',
   razorpayPaymentId: 'razorpayPaymentId',
-  issuedAt: 'issuedAt'
+  dueDate: 'dueDate',
+  issuedAt: 'issuedAt',
+  sentAt: 'sentAt',
+  paidAt: 'paidAt',
+  failedAt: 'failedAt',
+  createdById: 'createdById',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+};
+
+exports.Prisma.InvoiceItemScalarFieldEnum = {
+  id: 'id',
+  invoiceId: 'invoiceId',
+  name: 'name',
+  description: 'description',
+  quantity: 'quantity',
+  price: 'price',
+  sortOrder: 'sortOrder',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
 };
 
 exports.Prisma.LessonProgressScalarFieldEnum = {
@@ -380,6 +407,18 @@ exports.SubmissionStatus = exports.$Enums.SubmissionStatus = {
   NEEDS_REVISION: 'NEEDS_REVISION'
 };
 
+exports.InvoiceType = exports.$Enums.InvoiceType = {
+  STUDENT: 'STUDENT',
+  PROJECT: 'PROJECT'
+};
+
+exports.InvoiceStatus = exports.$Enums.InvoiceStatus = {
+  DRAFT: 'DRAFT',
+  SENT: 'SENT',
+  PAID: 'PAID',
+  FAILED: 'FAILED'
+};
+
 exports.Prisma.ModelName = {
   User: 'User',
   Account: 'Account',
@@ -397,6 +436,7 @@ exports.Prisma.ModelName = {
   Expense: 'Expense',
   Income: 'Income',
   Invoice: 'Invoice',
+  InvoiceItem: 'InvoiceItem',
   LessonProgress: 'LessonProgress'
 };
 
